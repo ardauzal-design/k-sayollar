@@ -11,6 +11,7 @@
     <!-- Firebase Cloud Altyapısı (CDN) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
     <script>
         tailwind.config = {
@@ -154,7 +155,7 @@
                 </div>
                 <div id="fileInputWrapper" class="hidden">
                     <input type="file" id="fileUpload" class="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-ys font-medium shadow-sm text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-ys/10 file:text-ys hover:file:bg-ys/20">
-                    <p class="text-xs text-gray-500 mt-1 ml-1">PDF, Excel, Word dosyaları desteklenir (Maks 2.5 MB).</p>
+                    <p class="text-xs text-gray-500 mt-1 ml-1">PDF, Excel, Word dosyaları desteklenir.</p>
                 </div>
 
                 <div>
@@ -369,7 +370,7 @@
            3. VERİ YÜKLEME VE KAYDETME
         ========================================= */
         function getSavedLocalData() {
-            const keys = ['ysCloudPortalLinks_v4', 'ysCloudPortalLinks_v3', 'ysCloudPortalLinks_v2', 'ysCloudPortalLinks', 'ysProtectedPortalLinks'];
+            const keys = ['ysCloudPortalLinks_v5', 'ysCloudPortalLinks_v4', 'ysCloudPortalLinks_v3', 'ysCloudPortalLinks_v2', 'ysCloudPortalLinks'];
             for (let k of keys) {
                 const raw = localStorage.getItem(k);
                 if (raw) {
@@ -383,38 +384,46 @@
         }
 
         function loadData() {
-            // 1. Önce yerel hafızadan yükle ve ekrana anında bas (asla boş ekran kalmaz)
+            // 1. Önce hafızadaki veya 13 ana bağlantıyı yükle (Asla boş ekran kalmaz)
             links = getSavedLocalData();
+            if (!links || links.length === 0) {
+                links = defaultData;
+            }
             refreshUI();
 
-            // 2. Firebase bağlantısı varsa dinle ve senkronize et
+            // 2. Firebase Bulut dinleyicisi
             if (db) {
                 db.ref('portalLinks').on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (!data || Object.keys(data).length === 0) {
+                        // Bulut boşsa, elimizdeki 13 hazır bağlantıyı hemen buluta yükle
+                        console.log("Bulut boş bulundu. 13 varsayılan bağlantı buluta yükleniyor...");
                         saveData();
                     } else {
+                        // Bulutta veri varsa al ve yerel hafızayı güncelle
                         const incoming = Object.values(data);
                         if (Array.isArray(incoming) && incoming.length > 0) {
                             links = incoming;
-                            localStorage.setItem('ysCloudPortalLinks_v4', JSON.stringify(links));
+                            localStorage.setItem('ysCloudPortalLinks_v5', JSON.stringify(links));
                             refreshUI();
                         }
                     }
                 }, (error) => {
-                    console.warn("Firebase okuma uyarısı:", error);
+                    console.warn("Firebase okuma hatası / kural uyarısı:", error);
+                    refreshUI();
                 });
             }
         }
 
         function saveData() {
+            // 1. Yerel hafızaya kaydet
             try {
-                localStorage.setItem('ysCloudPortalLinks_v4', JSON.stringify(links));
+                localStorage.setItem('ysCloudPortalLinks_v5', JSON.stringify(links));
             } catch (quotaErr) {
-                console.warn("Yerel hafıza (LocalStorage) kotası aşıldı:", quotaErr);
-                alert("Yüklenen dosya boyutu tarayıcı kotasını aştı. Lütfen daha küçük boyutlu bir dosya yükleyin veya Google Drive linki kullanın.");
+                console.warn("Yerel hafıza kotası:", quotaErr);
             }
             
+            // 2. Firebase Buluta senkronize et
             if (db) {
                 try {
                     const updates = {};
@@ -430,11 +439,16 @@
                             isDashboard: Boolean(l.isDashboard)
                         };
                     });
-                    db.ref('portalLinks').set(updates).catch(err => {
-                        console.warn("Firebase bulut yazma hatası:", err);
-                    });
+                    
+                    db.ref('portalLinks').set(updates)
+                        .then(() => {
+                            console.log("Firebase bulut senkronizasyonu başarılı! Toplam link:", links.length);
+                        })
+                        .catch(err => {
+                            console.error("Firebase bulut yazma hatası:", err);
+                        });
                 } catch (e) {
-                    console.warn("Firebase yazma hazırlık hatası:", e);
+                    console.error("Firebase hazırlık hatası:", e);
                 }
             }
             refreshUI();
@@ -785,7 +799,7 @@
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     if (file.size > 2.5 * 1024 * 1024) {
-                        alert("Yüklemeye çalıştığınız dosya 2.5 MB'tan büyük (" + (file.size / (1024 * 1024)).toFixed(1) + " MB).\\n\\nTarayıcı ve bulut kotasının aşılmaması için lütfen 2.5 MB'tan küçük bir PDF seçin veya büyük dosyalarınızı Google Drive'a yükleyip 'Web Linki' olarak ekleyin.");
+                        alert("Yüklemeye çalıştığınız dosya 2.5 MB'tan büyük (" + (file.size / (1024 * 1024)).toFixed(1) + " MB).\n\nTarayıcı ve bulut kotasının aşılmaması için lütfen 2.5 MB'tan küçük bir PDF seçin veya büyük dosyalarınızı Google Drive'a yükleyip 'Web Linki' olarak ekleyin.");
                         return;
                     }
 
@@ -1012,10 +1026,10 @@
         /* =========================================
            GÖRÜNÜM MODU (MOBİL / MASAÜSTÜ) YÖNETİMİ
         ========================================= */
-        let currentViewMode = localStorage.getItem('ysPortalViewMode') || null;
+        let currentViewMode = localStorage.getItem('ysPortalViewMode') || 'desktop';
 
         function checkInitialViewMode() {
-            if (!currentViewMode) {
+            if (!localStorage.getItem('ysPortalViewMode')) {
                 openViewModeModal();
             } else {
                 applyViewMode(currentViewMode);

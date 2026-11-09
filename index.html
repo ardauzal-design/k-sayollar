@@ -172,20 +172,31 @@
                     </select>
                 </div>
                 
-                <!-- İkon Seçici -->
+                <!-- İkon Seçici (Gelişmiş Yönetici & Dosya Simgeleri) -->
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2 ml-1">Simge (İkon) Seçin</label>
-                    <div class="bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 flex flex-wrap gap-4 justify-center" id="iconSelector">
-                        <i class="fa-solid fa-link text-2xl text-gray-400 icon-option selected" data-icon="fa-link" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-file-pdf text-2xl text-gray-400 icon-option" data-icon="fa-file-pdf" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-file-excel text-2xl text-gray-400 icon-option" data-icon="fa-file-excel" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-file-word text-2xl text-gray-400 icon-option" data-icon="fa-file-word" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-chart-line text-2xl text-gray-400 icon-option" data-icon="fa-chart-line" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-users text-2xl text-gray-400 icon-option" data-icon="fa-users" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-truck text-2xl text-gray-400 icon-option" data-icon="fa-truck" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-store text-2xl text-gray-400 icon-option" data-icon="fa-store" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-envelope text-2xl text-gray-400 icon-option" data-icon="fa-envelope" onclick="selectIcon(this)"></i>
-                        <i class="fa-solid fa-folder-open text-2xl text-gray-400 icon-option" data-icon="fa-folder-open" onclick="selectIcon(this)"></i>
+                    <div class="bg-gray-50 border-2 border-gray-100 rounded-2xl p-4 flex flex-wrap gap-3 justify-center max-h-40 overflow-y-auto hide-scrollbar" id="iconSelector">
+                        <!-- Temel Simgeler -->
+                        <i class="fa-solid fa-link text-2xl text-gray-400 icon-option selected" data-icon="fa-link" onclick="selectIcon(this)" title="Bağlantı"></i>
+                        <i class="fa-solid fa-mug-hot text-2xl text-gray-400 icon-option" data-icon="fa-mug-hot" onclick="selectIcon(this)" title="Mola / Kahve"></i>
+                        <i class="fa-solid fa-fire text-2xl text-gray-400 icon-option" data-icon="fa-fire" onclick="selectIcon(this)" title="Fire / İmha"></i>
+                        <i class="fa-solid fa-calendar-check text-2xl text-gray-400 icon-option" data-icon="fa-calendar-check" onclick="selectIcon(this)" title="Takvim / SKT"></i>
+                        <!-- Yönetici & Şifreli Dosya Simgeleri -->
+                        <i class="fa-solid fa-user-shield text-2xl text-gray-400 icon-option" data-icon="fa-user-shield" onclick="selectIcon(this)" title="Yönetici Güvenlik"></i>
+                        <i class="fa-solid fa-file-shield text-2xl text-gray-400 icon-option" data-icon="fa-file-shield" onclick="selectIcon(this)" title="Şifreli Belge"></i>
+                        <i class="fa-solid fa-user-tie text-2xl text-gray-400 icon-option" data-icon="fa-user-tie" onclick="selectIcon(this)" title="Yönetici"></i>
+                        <i class="fa-solid fa-crown text-2xl text-gray-400 icon-option" data-icon="fa-crown" onclick="selectIcon(this)" title="Yetkili / Şef"></i>
+                        <i class="fa-solid fa-key text-2xl text-gray-400 icon-option" data-icon="fa-key" onclick="selectIcon(this)" title="Anahtar / Şifre"></i>
+                        <i class="fa-solid fa-lock text-2xl text-gray-400 icon-option" data-icon="fa-lock" onclick="selectIcon(this)" title="Kilit"></i>
+                        <!-- Dosya ve Operasyon Simgeleri -->
+                        <i class="fa-solid fa-file-pdf text-2xl text-gray-400 icon-option" data-icon="fa-file-pdf" onclick="selectIcon(this)" title="PDF"></i>
+                        <i class="fa-solid fa-file-excel text-2xl text-gray-400 icon-option" data-icon="fa-file-excel" onclick="selectIcon(this)" title="Excel"></i>
+                        <i class="fa-solid fa-file-word text-2xl text-gray-400 icon-option" data-icon="fa-file-word" onclick="selectIcon(this)" title="Word"></i>
+                        <i class="fa-solid fa-chart-pie text-2xl text-gray-400 icon-option" data-icon="fa-chart-pie" onclick="selectIcon(this)" title="Dashboard"></i>
+                        <i class="fa-solid fa-truck-fast text-2xl text-gray-400 icon-option" data-icon="fa-truck-fast" onclick="selectIcon(this)" title="Lojistik"></i>
+                        <i class="fa-solid fa-barcode text-2xl text-gray-400 icon-option" data-icon="fa-barcode" onclick="selectIcon(this)" title="Barkod"></i>
+                        <i class="fa-solid fa-trophy text-2xl text-gray-400 icon-option" data-icon="fa-trophy" onclick="selectIcon(this)" title="Başarı"></i>
+                        <i class="fa-solid fa-calculator text-2xl text-gray-400 icon-option" data-icon="fa-calculator" onclick="selectIcon(this)" title="Hesaplama"></i>
                     </div>
                     <input type="hidden" id="selectedIcon" value="fa-link">
                 </div>
@@ -369,81 +380,57 @@
         let dashboardRefreshInterval = null;
 
         /* =========================================
-           GÖRÜNÜM MODU (MOBİL / MASAÜSTÜ) YÖNETİMİ
-        ========================================= */
-        let currentViewMode = localStorage.getItem('ysPortalViewMode') || null;
-
-        function checkInitialViewMode() {
-            if (!currentViewMode) {
-                openViewModeModal();
-            } else {
-                applyViewMode(currentViewMode);
-            }
-        }
-
-        function openViewModeModal() {
-            openModal('viewModeModal');
-        }
-
-        function selectViewMode(mode) {
-            currentViewMode = mode;
-            localStorage.setItem('ysPortalViewMode', mode);
-            closeModal('viewModeModal');
-            applyViewMode(mode);
-            showToast(`${mode === 'mobile' ? 'Mobil' : 'Masaüstü'} görünüme geçildi.`);
-        }
-
-        function applyViewMode(mode) {
-            const body = document.body;
-            const icon = document.getElementById('viewModeIcon');
-            
-            if (icon) {
-                icon.className = mode === 'mobile' ? 'fa-solid fa-mobile-screen text-ys' : 'fa-solid fa-laptop text-ys';
-            }
-
-            if (mode === 'mobile') {
-                body.classList.add('mobile-mode-active');
-            } else {
-                body.classList.remove('mobile-mode-active');
-            }
-            refreshUI();
-        }
-
-        /* =========================================
-           3. VERİ YÜKLEME VE KAYDETME
+           3. VERİ YÜKLEME VE KAYDETME (ÇİFT KATMANLI KORUMA)
         ========================================= */
         function loadData() {
-            const localData = localStorage.getItem('ysCloudPortalLinks_v2');
-            const fallbackData = localData ? JSON.parse(localData) : defaultData;
+            // 1. ADIM: Önce yerel hafızadan yükle (Asla boş ekran kalmaz)
+            const localRaw = localStorage.getItem('ysCloudPortalLinks_v3');
+            if (localRaw) {
+                try {
+                    const parsed = JSON.parse(localRaw);
+                    links = (Array.isArray(parsed) && parsed.length > 0) ? parsed : defaultData;
+                } catch(e) {
+                    links = defaultData;
+                }
+            } else {
+                links = defaultData;
+            }
+            
+            // Ekrana hemen bas
+            refreshUI();
 
+            // 2. ADIM: Firebase bulut ile senkronize et
             if (db) {
                 db.ref('portalLinks').on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (!data || Object.keys(data).length === 0) {
-                        links = fallbackData;
+                        // Firebase boş ise elimizdeki tam listeyi buluta aktar
                         saveData();
                     } else {
+                        // Bulutta veri varsa güncelle
                         links = Object.values(data);
+                        localStorage.setItem('ysCloudPortalLinks_v3', JSON.stringify(links));
+                        refreshUI();
                     }
-                    refreshUI();
                 }, (error) => {
-                    console.error("Firebase okuma hatası:", error);
-                    links = fallbackData;
-                    refreshUI();
+                    console.warn("Firebase okuma hatası, yerel veriler kullanılıyor:", error);
                 });
-            } else {
-                links = fallbackData;
-                refreshUI();
             }
         }
 
         function saveData() {
+            // Her zaman yerel hafızaya kaydet
+            localStorage.setItem('ysCloudPortalLinks_v3', JSON.stringify(links));
+            
+            // Buluta da kaydet
             if (db) {
-                const updates = {};
-                links.forEach(l => updates[l.id] = l);
-                db.ref('portalLinks').set(updates);
-            } else {
-                localStorage.setItem('ysCloudPortalLinks_v2', JSON.stringify(links));
+                try {
+                    const updates = {};
+                    links.forEach(l => updates[l.id] = l);
+                    db.ref('portalLinks').set(updates);
+                } catch(e) {
+                    console.warn("Firebase yazma hatası:", e);
+                }
             }
             refreshUI();
         }
@@ -834,7 +821,6 @@
             const container = document.getElementById('links-container');
             const noResults = document.getElementById('no-results');
             const totalCount = document.getElementById('total-count');
-            
             const searchInputVal = document.getElementById('searchInput').value;
             const searchText = searchInputVal.toLocaleLowerCase('tr-TR').trim();
             
@@ -944,6 +930,48 @@
             `;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        /* =========================================
+           GÖRÜNÜM MODU (MOBİL / MASAÜSTÜ) YÖNETİMİ
+        ========================================= */
+        let currentViewMode = localStorage.getItem('ysPortalViewMode') || null;
+
+        function checkInitialViewMode() {
+            if (!currentViewMode) {
+                openViewModeModal();
+            } else {
+                applyViewMode(currentViewMode);
+            }
+        }
+
+        function openViewModeModal() {
+            openModal('viewModeModal');
+        }
+
+        function selectViewMode(mode) {
+            currentViewMode = mode;
+            localStorage.setItem('ysPortalViewMode', mode);
+            closeModal('viewModeModal');
+            applyViewMode(mode);
+            showToast(`${mode === 'mobile' ? 'Mobil' : 'Masaüstü'} görünüme geçildi.`);
+        }
+
+        function applyViewMode(mode) {
+            const body = document.body;
+            const container = document.getElementById('links-container');
+            const icon = document.getElementById('viewModeIcon');
+            
+            if (icon) {
+                icon.className = mode === 'mobile' ? 'fa-solid fa-mobile-screen text-ys' : 'fa-solid fa-laptop text-ys';
+            }
+
+            if (mode === 'mobile') {
+                body.classList.add('mobile-mode-active');
+            } else {
+                body.classList.remove('mobile-mode-active');
+            }
+            refreshUI();
         }
 
         // Başlangıç
